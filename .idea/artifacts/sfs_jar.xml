@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sfs:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sfs_jar</output-path>
+    <root id="archive" name="sfs.jar">
+      <element id="module-output" name="sfs" />
+    </root>
+  </artifact>
+</component>
