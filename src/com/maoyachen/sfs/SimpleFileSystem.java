@@ -8,6 +8,7 @@ public class SimpleFileSystem {
     private final Disk disk;
     private BitSet bitMap;
     private int inodeNum;
+    private int blockNum;
 
     public SimpleFileSystem(Disk disk) {
         this.disk = disk;
@@ -30,12 +31,10 @@ public class SimpleFileSystem {
         superBlock[6] = (byte) 0x00;
         superBlock[7] = (byte) 0x00;
 
-        // 1791 个 data blocks
-        superBlock[8] = (byte) 0xff;
-        superBlock[9] = (byte) 0x06;
-        superBlock[10] = (byte) 0x00;
-        superBlock[11] = (byte) 0x00;
+        int dataBlockNum = disk.getSize() / 512 - 256 - 1;
+        byte[] dataBlockNumBytes = Util.intToBytes(dataBlockNum);
 
+        System.arraycopy(dataBlockNumBytes, 0, superBlock, 8, 4);
         IndexNode rootInode = new IndexNode();
 
         initInode(rootInode, (byte) 1);
@@ -59,7 +58,7 @@ public class SimpleFileSystem {
         }
 
         inodeNum = Util.bytesToInt(Arrays.copyOfRange(block, 4, 8));
-        int blockNum = Util.bytesToInt(Arrays.copyOfRange(block, 8, 12));
+        blockNum = Util.bytesToInt(Arrays.copyOfRange(block, 8, 12));
 
         bitMap = new BitSet(blockNum);
         // 恢复 bitMap
@@ -97,7 +96,7 @@ public class SimpleFileSystem {
     }
 
     private int getFirstFreeDataBlock() {
-        for (int i = 0; i < disk.getSize() / 512; i++) {
+        for (int i = 0; i < blockNum; i++) {
             if (!bitMap.get(i)) {
                 bitMap.set(i);
                 return i + inodeNum + 1;
@@ -356,7 +355,7 @@ public class SimpleFileSystem {
         }
     }
 
-    public void cat(String filename) {
+    public void cat(String filename, int mode) {
         int inumber = stat(filename);
         if (inumber == -1) {
             System.out.println(filename + " is not exist.");
@@ -368,10 +367,27 @@ public class SimpleFileSystem {
             return;
         }
         byte[] content = new byte[inode.getSize()];
-        if (read(filename, content, 0)) {
-            System.out.println(new String(content, StandardCharsets.US_ASCII));
-        } else {
-            System.out.println("fail.");
+        if (mode == 0) {
+            if (read(filename, content, 0)) {
+                System.out.println(new String(content, StandardCharsets.US_ASCII));
+            } else {
+                System.out.println("fail.");
+            }
+        } else if (mode == 1) {
+            int index = 0;
+            if (read(filename, content, 0)) {
+                for (int i = 0; i < content.length / 16 + 1; i++) {
+                    for (int j = 0; j < 16; j++) {
+                        if (index >= content.length) {
+                            break;
+                        }
+                        System.out.printf("%02x ", content[index++]);
+                    }
+                    System.out.print('\n');
+                }
+            } else {
+                System.out.println("fail.");
+            }
         }
     }
 

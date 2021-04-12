@@ -16,10 +16,12 @@ public class Disk {
     }
 
     public void clear() {
-        byte[] content = new byte[size];
+        byte[] block = new byte[1024];
         try {
             file.seek(0);
-            file.write(content);
+            for (int i = 0; i < size / 1024; i++) {
+                file.write(block);
+            }
             file.seek(0);
         } catch (IOException e) {
             e.printStackTrace();

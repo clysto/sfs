@@ -3,7 +3,6 @@ package com.maoyachen.sfs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class Main {
         }
 
         try {
-            disk = new Disk(args[0], 1024 * 1024);
+            disk = new Disk(args[0], 10 * 1024 * 1024);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
@@ -55,7 +54,7 @@ public class Main {
                     sfs.format();
                     break;
                 case "cat":
-                    sfs.cat(parsed.length > 1 ? parsed[1] : "");
+                    sfs.cat(parsed.length > 1 ? parsed[1] : "", 0);
                     break;
                 case "touch": {
                     String filename = parsed[1];
@@ -90,6 +89,10 @@ public class Main {
                     } else {
                         System.out.println("fail.");
                     }
+                    break;
+                }
+                case "hexdump": {
+                    sfs.cat(parsed.length > 1 ? parsed[1] : "", 1);
                     break;
                 }
                 case "rm": {
